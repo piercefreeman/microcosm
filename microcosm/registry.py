@@ -3,7 +3,7 @@ Registry of component factories.
 
 """
 from itertools import chain
-from pkg_resources import DistributionNotFound, iter_entry_points
+from importlib.metadata import entry_points
 from typing import (
     Any,
     Callable,
@@ -98,12 +98,8 @@ class Registry:
             return self._resolve_from_entry_point(key)
 
     def _iter_entry_points(self) -> Iterator[Tuple[str, Callable[[Any], Component]]]:
-        for entry_point in iter_entry_points(group="microcosm.factories"):
-            try:
-                factory = entry_point.load()
-            except DistributionNotFound:
-                continue
-
+        for entry_point in entry_points().select(group="microcosm.factories"):
+            factory = entry_point.load()
             yield entry_point.name, factory
 
     def _resolve_from_binding(self, key: str) -> Callable[[Any], Component]:
